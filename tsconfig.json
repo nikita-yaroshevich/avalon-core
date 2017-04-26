@@ -1,16 +1,25 @@
 {
   "compilerOptions": {
-    "target": "ES5",
     "module": "commonjs",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "target": "es5",
     "sourceMap": true,
-    "noEmitHelpers": true
+    "inlineSources": false,
+    "declaration": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "stripInternal": true,
+    "skipLibCheck": true,
+    "lib": ["es2015", "es2017", "dom"]
   },
-  "compileOnSave": false,
-  "buildOnSave": false,
-  "awesomeTypescriptLoaderOptions": {
-    "forkChecker": true,
-    "useWebpackText": true
-  }
+  "files": [
+    "index.ts",
+    "test/logger.spec.ts"
+  ],
+  "typeRoots": [
+    "../node_modules/@types"
+  ],
+  "types": [
+    "jasmine"
+  ]
 }

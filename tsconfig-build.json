@@ -1,24 +1,28 @@
 {
   "compilerOptions": {
-    "target": "ES5",
-    "module": "commonjs",
-    "declaration": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
+    "module": "es2015",
+    "moduleResolution": "node",
+    "target": "es5",
+    "stripInternal": true,
     "sourceMap": true,
-    "noEmitHelpers": true
+    "inlineSources": true,
+    "declaration": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "lib": ["es2015", "es2017", "dom"]
   },
   "files": [
-    "ngx-your-library.ts"
+    "index.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "bundles"
+  "typeRoots": [
+    "../node_modules/@types"
   ],
-  "compileOnSave": false,
-  "buildOnSave": false,
-  "awesomeTypescriptLoaderOptions": {
-    "forkChecker": true,
-    "useWebpackText": true
+  "types": [
+    "jasmine"
+  ],
+  "angularCompilerOptions": {
+    "skipMetadataEmit": false,
+    "skipTemplateCodegen": true
   }
 }

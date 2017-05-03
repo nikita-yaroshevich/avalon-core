@@ -97,7 +97,7 @@ export class HttpRepository<EntityType> extends BaseRepository<EntityType> {
         ));
         const method = entity.id ? 'put' : 'post';
         options.params = urlParams.params;
-        return this.getEntityManager()[method](urlParams.url, entity, options)
+        return (<any>this.getEntityManager())[method](urlParams.url, entity, options)
             .toPromise();
     }
 

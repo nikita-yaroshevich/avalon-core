@@ -1,7 +1,5 @@
 .idea
 
-*.ts
-!*.d.ts
 
 /node_modules/
 /.gitignore

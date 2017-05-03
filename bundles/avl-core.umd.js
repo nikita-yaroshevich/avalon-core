@@ -2188,7 +2188,7 @@ var FieldErrorsComponent = (function () {
     Object.defineProperty(FieldErrorsComponent.prototype, "errors", {
         get: function () {
             if (this.maxErrorsCount && this.maxErrorsCount === 0) {
-                return;
+                return [];
             }
             if (this.control && this.control.touched && this.control.errors) {
                 var errors_keys = Object.keys(this.control.errors);

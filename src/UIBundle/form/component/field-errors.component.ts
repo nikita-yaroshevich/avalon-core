@@ -44,7 +44,7 @@ export class FieldErrorsComponent implements AfterViewInit {
 
   get errors():any {
     if (this.maxErrorsCount && this.maxErrorsCount === 0) {
-      return;
+      return [];
     }
     if (this.control && this.control.touched && this.control.errors) {
       let errors_keys:string[] = Object.keys(this.control.errors);

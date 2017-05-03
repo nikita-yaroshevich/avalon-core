@@ -5,7 +5,7 @@ import {ItemTransformerAbstract} from "./ItemTransformerAbstract";
 import {TransformerOptions} from "./common";
 import * as _ from "lodash";
 import {TransformManager} from "./TransformManager";
-import {DublicateEntityException} from "../exceptions/exceptions";
+import {DuplicateEntityException} from "../exceptions/exceptions";
 
 describe('transformers:', () => {
   const data = [

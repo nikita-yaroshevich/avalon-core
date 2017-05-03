@@ -1,5 +1,5 @@
 import {FunctionTransformer} from "./FunctionTransformer";
-import {NotFoundException, DublicateEntityException} from "../exceptions/exceptions";
+import {NotFoundException, DuplicateEntityException} from "../exceptions/exceptions";
 import * as _ from "lodash";
 import {TransformableInterface, TransformerOptions} from "./common";
 
@@ -29,11 +29,11 @@ export class ChainTransformer implements TransformableInterface {
    * @param t
    * @param opt  options associated with current transformer. will be deeply merged with options passed to transform method
    * @return {ChainTransformer}
-   * @throws DublicateEntityException
+   * @throws DuplicateEntityException
      */
   addTransformer(t:TransformableInterface|Function, opt?:any) {
     if (this.hasTransformer(t)) {
-      throw new DublicateEntityException();
+      throw new DuplicateEntityException();
     }
 
     if (t instanceof Function) {

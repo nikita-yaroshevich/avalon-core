@@ -1,3 +1,6 @@
+import {Observable} from 'rxjs/Observable';
+import {AuthenticationException} from "../exceptions/exceptions";
+
 export interface UserInterface {
 
 }
@@ -21,10 +24,11 @@ export interface UserTokenInterface {
 }
 
 export interface AuthProviderInterface {
-  authenticate(token:UserTokenInterface):Promise<UserTokenInterface>;
+  authenticate(token:UserTokenInterface):Promise<UserTokenInterface|AuthenticationException>;
   supports(token:UserTokenInterface):boolean;
   restore():Promise<UserTokenInterface|null>;
-  logout():Promise<UserTokenInterface>;
+  logout(token?:UserTokenInterface):Promise<UserTokenInterface>;
+  onAuthTokenChanged?:Observable<UserTokenInterface>;
 }
 
 

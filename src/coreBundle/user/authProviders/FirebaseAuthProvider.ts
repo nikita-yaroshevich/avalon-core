@@ -2,44 +2,189 @@ import {UsernamePasswordAuthProvider, UsernamePasswordToken, BasicUser} from "./
 import {Http, Response, Headers, URLSearchParams} from "@angular/http";
 import {UserTokenInterface, UserInterface, AuthProviderInterface} from "../common";
 import {AnonymousUserToken} from "../AnonymousUserToken";
+import {Utils} from "../../Utils";
+import {Observable, Subscriber} from 'rxjs/Rx';
+import {AuthenticationException} from "../../exceptions/exceptions";
+
+declare var firebase:any;
 
 export class FirebaseAuthProvider implements AuthProviderInterface {
     private user:any;
+    onAuthTokenChanged?:Observable<UserTokenInterface>;
+
 
     constructor(private firebase_auth:any) {
-        firebase_auth.onAuthStateChanged((user) => {
-            if (user){
-                this.user = user;
-            }
+        this.onAuthTokenChanged = Observable.create((subscriber:Subscriber<UserTokenInterface>) => {
+
+            firebase_auth.onAuthStateChanged((user:any) => {
+                if (user) {
+                    // User is signed in.
+                    this.user = user;
+                    subscriber.next(user.isAnonymous ? new FirebaseAnonymusAuthToken(user) : new FirebaseAuthToken(user));
+                    user.getToken()
+                        .then((tokenString:string)=> {
+                            Utils.writeCookie('FirebaseAuthProvider_token', tokenString);
+                        });
+                } else {
+                    // User is signed out.
+                    Utils.removeCookie('FirebaseAuthProvider_token');
+                    this.user = null;
+                    subscriber.next(new AnonymousUserToken());
+                }
+            });
+
         });
     }
 
     supports(token:UserTokenInterface):boolean {
-        return true;
+        return token instanceof UsernamePasswordToken || token instanceof FirebaseSocialAuthToken || token instanceof FirebaseAnonymusAuthToken || token instanceof  FirebaseAuthToken;
     }
 
-    authenticate(token:any):Promise<UserTokenInterface> {
-        return this.user ? Promise.resolve(new FirebaseAuthToken(this.user)) : Promise.reject(new AnonymousUserToken());
+    authenticate(token:any):Promise<UserTokenInterface|AuthenticationException> {
+        return this.doAuthenticate(token)
+            .then((token:UserTokenInterface)=> {
+                return token;
+            })
+            .catch((e:any)=> {
+                return Promise.reject(e);
+            });
     }
+
+    protected doAuthenticate(token:any):Promise<UserTokenInterface|AuthenticationException> {
+        if (token instanceof UsernamePasswordToken) {
+            return this.authenticateByUsernamePassword(token);
+        }
+
+        if (token instanceof FirebaseSocialAuthToken) {
+            return this.authenticateByOAuthService(token);
+        }
+
+        if (this.user && token instanceof FirebaseAuthToken){
+            return this.authenticateWithExisted(token);
+        }
+
+        return this.authenticateAnonymously(token);
+    }
+
+    protected authenticateWithExisted(token:FirebaseAuthToken):Promise<FirebaseAuthToken|AuthenticationException> {
+        return new Promise((resolve, reject)=> {
+            if (this.user){
+                return resolve(token);
+            } else {
+                return reject(new AuthenticationException(token, "User not really signed in. Try reload the app."));
+            }
+        });
+    }
+
+    protected authenticateAnonymously(token:FirebaseAnonymusAuthToken):Promise<FirebaseAnonymusAuthToken|AuthenticationException> {
+        return new Promise((resolve, reject)=> {
+            this.firebase_auth.signInAnonymously()
+                .then((user:any)=> {
+                    resolve(new FirebaseAnonymusAuthToken(user));
+                })
+                .catch((error:any)=> {
+                    reject(new AuthenticationException(token, error.message, error));
+                });
+        });
+    }
+
+    protected authenticateByUsernamePassword(token:UsernamePasswordToken):Promise<FirebaseAuthToken|AuthenticationException> {
+        return new Promise((resolve, reject)=> {
+            if (this.user) {
+                let credential = firebase.auth.EmailAuthProvider.credential(token.getUsername(), token.password);
+                this.firebase_auth.currentUser.linkWithCredential(credential).then((user)=> {
+                    return resolve(new FirebaseAuthToken(user));
+                }, (error) => {
+                    if (error.code === "auth/email-already-in-use") {
+                        this.user.reauthenticateWithCredential(credential)
+                            .then((user)=> {
+                                resolve(new FirebaseAuthToken(user));
+                            })
+                            .catch((error)=> {
+                                reject(new AuthenticationException(token, error.message, error));
+                            });
+                    } else {
+                        reject(new AuthenticationException(token, error.message, error));
+                    }
+                });
+            } else {
+                this.firebase_auth.signInWithEmailAndPassword(token.getUsername(), token.password)
+                    .then((user:any)=> {
+                        resolve(new FirebaseAuthToken(user));
+                    })
+                    .catch((error:any)=> {
+                        reject(new AuthenticationException(token, error.message, error));
+                    });
+            }
+        });
+    }
+
+    protected authenticateByOAuthService(token:FirebaseSocialAuthToken):Promise<FirebaseAuthToken|AuthenticationException> {
+        return new Promise((resolve, reject)=> {
+            if (this.user) {
+                let credential = token.socialProvider.credential(token.socialProvider);
+                this.firebase_auth.currentUser.linkWithCredential(credential).then((user)=> {
+                    return resolve(new FirebaseAuthToken(user));
+                }, (error) => {
+                    reject(new AuthenticationException(token, error.message, error));
+                });
+            } else {
+                // this.firebase_auth.signInWithRedirect(token.socialProvider);
+                // this.firebase_auth.getRedirectResult()
+                this.firebase_auth.signInWithPopup(token.socialProvider)
+                    .then((result:any)=> {
+                        // This gives you a Facebook Access Token. You can use it to access the Facebook API.
+                        var token = result.credential.accessToken;
+                        // The signed-in user info.
+                        var user = result.user;
+                        user.facebookAccessToken = token;
+                        resolve(new FirebaseAuthToken(user));
+                    })
+                    .catch((error:any)=> {
+                        reject(new AuthenticationException(token, error.message, error));
+                    });
+            }
+        });
+    }
+
 
     restore():Promise<UserTokenInterface|null> {
-        return this.user ? Promise.resolve(new FirebaseAuthToken(this.user)) : Promise.reject(new AnonymousUserToken());
+        return new Promise((resolve, reject)=> {
+            if (this.user) {
+                return resolve(new FirebaseAuthToken(this.user));
+            }
+            let sub = this.onAuthTokenChanged.subscribe((token:UserTokenInterface)=> {
+                sub.unsubscribe();
+                clearTimeout(timeout);
+                resolve(token);
+            });
+            let timeout = setTimeout(()=> {
+                sub.unsubscribe();
+                reject(null);
+            }, 5000);
+        });
     }
 
-    logout():Promise<UserTokenInterface> {
-        return Promise.resolve(new AnonymousUserToken());
+    logout(token:UserTokenInterface):Promise<UserTokenInterface> {
+        return new Promise((resolve, reject)=> {
+            this.firebase_auth.signOut()
+                .then(function () {
+                    delete this.user;
+                    resolve(new AnonymousUserToken());
+                }).catch(function (error) {
+                reject(token);
+            });
+        });
     }
 }
 
 export class FirebaseAuthToken implements UserTokenInterface {
-    private user:UserInterface;
+    protected user:UserInterface;
     roles:string[] = [];
 
     constructor(data:any) {
-        this.user = {};
-        Object.keys(data).forEach((key:string)=> {
-            (<any>this.user)[key] = data[key];
-        });
+        this.user = data;
+        // (<any>this.user).isAnonymous = false;
     }
 
     getUser():UserInterface {
@@ -47,7 +192,7 @@ export class FirebaseAuthToken implements UserTokenInterface {
     }
 
     getUsername():string {
-        return (<any>this.getUser()).username;
+        return (<any>this.getUser()).email;
     }
 
     hasRole(name:string):boolean {
@@ -61,5 +206,28 @@ export class FirebaseAuthToken implements UserTokenInterface {
 
     isAuthenticated():boolean {
         return !!(<any>this.getUser());
+    }
+}
+
+export class FirebaseAnonymusAuthToken extends FirebaseAuthToken {
+    roles:string[] = ['anonymous'];
+
+    constructor(data:any) {
+        super(data);
+    }
+
+    isAuthenticated():boolean {
+        return true;
+    }
+
+}
+
+export class FirebaseSocialAuthToken extends FirebaseAuthToken {
+    constructor(data:any, public socialProvider:any) {
+        super(data);
+    }
+
+    isAuthenticated():boolean {
+        return true;
     }
 }

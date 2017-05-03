@@ -11,14 +11,6 @@ export class UserRestoreResolver implements Resolve<any> {
   }
 
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<any> | Promise<any> | boolean  {
-    let oldToken = this.userService.getUserToken();
-    return Promise.all(this.userService.getProviders().map((provider:AuthProviderInterface)=>{
-      return provider.restore();
-    })).then((results:any[])=>{
-      let token = results.pop();
-      return this.userService.setToken(token);
-    },()=>{
-      return Promise.resolve();
-    });
+    return this.userService.reload();
   }
 }

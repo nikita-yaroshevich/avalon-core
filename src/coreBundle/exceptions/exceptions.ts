@@ -1,6 +1,7 @@
 import {
   Response
 } from "@angular/http";
+import {UserTokenInterface} from "../user/common";
 
 export class NotFoundException extends Error {
   constructor(message?:string) {
@@ -8,7 +9,7 @@ export class NotFoundException extends Error {
   }
 }
 
-export class DublicateEntityException extends Error {
+export class DuplicateEntityException extends Error {
   constructor(message?:string) {
     super(message);
   }
@@ -45,3 +46,10 @@ export class RuntimeException extends Error {
     super(message);
   }
 }
+
+export class AuthenticationException extends Error {
+  constructor(public token: UserTokenInterface, message?:string, public error?:any) {
+    super(message);
+  }
+}
+

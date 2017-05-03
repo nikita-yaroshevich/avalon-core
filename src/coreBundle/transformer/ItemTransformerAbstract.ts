@@ -46,7 +46,7 @@ export abstract class ItemTransformerAbstract implements TransformableInterface 
     let result:any = {};
     for (let incName of includes) {
       try {
-        result[incName] = (<any>this)[this.getIcludeMethodName(incName)](data, options);
+        result[incName] = (<any>this)[this.getIncludeMethodName(incName)](data, options);
       } catch(e) {
         throw new Error('Unable to transform with error ' + e.toString());
       }
@@ -57,11 +57,11 @@ export abstract class ItemTransformerAbstract implements TransformableInterface 
   protected getIncludes(options:TransformerOptions):string[] {
     options = options || {};
     let incs = _.without<any>(_.uniq(this.defaultIncludes.concat(options.include || [])), options.exclude);
-    incs = incs.filter((name:string)=> (<any>this)[this.getIcludeMethodName(name)]);
+    incs = incs.filter((name:string)=> (<any>this)[this.getIncludeMethodName(name)]);
     return incs;
   }
 
-  protected getIcludeMethodName(name:string):string {
+  protected getIncludeMethodName(name:string):string {
     return 'include' + inflection.classify(name);
   }
 }

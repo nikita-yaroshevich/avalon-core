@@ -2,39 +2,19 @@ import {UsernamePasswordAuthProvider, UsernamePasswordToken, BasicUser} from "./
 import {Http, Response, Headers, URLSearchParams} from "@angular/http";
 import {UserTokenInterface, UserInterface, AuthProviderInterface} from "../common";
 import {AnonymousUserToken} from "../AnonymousUserToken";
+import {Utils} from "../../Utils";
+import {AuthenticationException} from "../../exceptions/exceptions";
 
 
 export class ParseAuthProvider implements AuthProviderInterface {
     constructor(private options:{authUrl:string, baseUrl:string, X_Parse_Application_Id:string, X_Parse_REST_API_Key:string}, private http:Http) {
     }
 
-    private readCookie(name:string) {
-        var result = new RegExp('(?:^|; )' + encodeURIComponent(name) + '=([^;]*)').exec(document.cookie);
-        return result ? result[1] : null;
-    }
-
-    private writeCookie(name:string, value:string, days?:number) {
-        if (!days) {
-            days = 365 * 20;
-        }
-
-        var date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-
-        var expires = "; expires=" + date.toUTCString();
-
-        document.cookie = name + "=" + value + expires + "; path=/";
-    }
-
-    private removeCookie(name:string) {
-        this.writeCookie(name, "", -1);
-    }
-
     supports(token:UserTokenInterface):boolean {
         return token instanceof UsernamePasswordToken;
     }
 
-    authenticate(token:UsernamePasswordToken):Promise<UserTokenInterface> {
+    authenticate(token:UsernamePasswordToken):Promise<UserTokenInterface|AuthenticationException> {
         return this.http.get(this.options.authUrl,
             {
                 params: new URLSearchParams(`username=${token.username}&password=${token.password}`),
@@ -47,16 +27,16 @@ export class ParseAuthProvider implements AuthProviderInterface {
             .then((response:Response)=> {
                 let data = response.json();
                 let token = new ParseAuthToken(data);
-                this.writeCookie('ParseAuthProvider:remeberme', data);
+                Utils.writeCookie('ParseAuthProvider_remeberme', data);
                 return token;
             }).catch((e:Response)=> {
                 let error:any = e.json();
-                return Promise.reject(new Error(error.error || 'Invalid Username or Password'));
+                return Promise.reject(new AuthenticationException(token, error.message, error));
             });
     }
 
     restore():Promise<UserTokenInterface|null> {
-        let token_data = this.readCookie('ParseAuthProvider:remeberme');
+        let token_data = Utils.readCookie('ParseAuthProvider_remeberme');
         return (token_data ? Promise.resolve(new ParseAuthToken(token_data)) : Promise.reject(null))
             .then((token_data:any)=> {
                 return this.http.get(this.options.baseUrl + '/users/me',
@@ -78,7 +58,7 @@ export class ParseAuthProvider implements AuthProviderInterface {
     }
 
     logout():Promise<UserTokenInterface> {
-        this.removeCookie('ParseAuthProvider:remeberme');
+        Utils.removeCookie('ParseAuthProvider_remeberme');
         return Promise.resolve(new AnonymousUserToken());
     }
 }

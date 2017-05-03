@@ -1,12 +1,13 @@
 import {AuthProviderInterface, UserTokenInterface, UserInterface} from "./common";
+import {AnonymousUserToken} from "./AnonymousUserToken";
 
 export class ManualAuthProvider implements AuthProviderInterface {
-  restore():Promise<UserTokenInterface|any> {
+  restore():Promise<UserTokenInterface|null> {
     return Promise.reject(null);
   }
 
   logout():Promise<UserTokenInterface> {
-    return undefined;
+    return Promise.resolve(new AnonymousUserToken());
   }
   authenticate(token:ManualUserToken):Promise<UserTokenInterface>{
     token.setAuthenticated(true);
@@ -29,7 +30,7 @@ export class ManualUserToken implements UserTokenInterface {
   }
 
   getUsername():string {
-    return this.getUser()['username'] || 'Anonymous';
+    return (<any>this.getUser())['username'] || 'Anonymous';
   }
 
   hasRole(name:string):boolean {

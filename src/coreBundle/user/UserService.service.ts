@@ -74,7 +74,7 @@ export class UserService {
     setToken(token:UserTokenInterface):UserTokenInterface {
         let oldToken = this.getUserToken();
         if (oldToken === token) {
-            return;
+            return token;
         }
         this.userToken = token;
         let event = new UserChangedEvent(oldToken, this.getUserToken());

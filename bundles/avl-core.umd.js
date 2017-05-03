@@ -1278,7 +1278,7 @@ var ManualAuthProvider = (function () {
         return Promise.reject(null);
     };
     ManualAuthProvider.prototype.logout = function () {
-        return undefined;
+        return Promise.resolve(new AnonymousUserToken());
     };
     ManualAuthProvider.prototype.authenticate = function (token) {
         token.setAuthenticated(true);
@@ -1369,7 +1369,7 @@ var UserService = (function () {
     UserService.prototype.setToken = function (token) {
         var oldToken = this.getUserToken();
         if (oldToken === token) {
-            return;
+            return token;
         }
         this.userToken = token;
         var event = new UserChangedEvent(oldToken, this.getUserToken());

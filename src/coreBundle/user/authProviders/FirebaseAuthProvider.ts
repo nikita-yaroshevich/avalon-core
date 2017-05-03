@@ -10,7 +10,7 @@ declare var firebase:any;
 
 export class FirebaseAuthProvider implements AuthProviderInterface {
     private user:any;
-    onAuthTokenChanged?:Observable<UserTokenInterface>;
+    onAuthTokenChanged:Observable<UserTokenInterface>;
 
 
     constructor(private firebase_auth:any) {
@@ -92,15 +92,15 @@ export class FirebaseAuthProvider implements AuthProviderInterface {
         return new Promise((resolve, reject)=> {
             if (this.user) {
                 let credential = firebase.auth.EmailAuthProvider.credential(token.getUsername(), token.password);
-                this.firebase_auth.currentUser.linkWithCredential(credential).then((user)=> {
+                this.firebase_auth.currentUser.linkWithCredential(credential).then((user:any)=> {
                     return resolve(new FirebaseAuthToken(user));
-                }, (error) => {
+                }, (error:any) => {
                     if (error.code === "auth/email-already-in-use") {
                         this.user.reauthenticateWithCredential(credential)
-                            .then((user)=> {
+                            .then((user:any)=> {
                                 resolve(new FirebaseAuthToken(user));
                             })
-                            .catch((error)=> {
+                            .catch((error:any)=> {
                                 reject(new AuthenticationException(token, error.message, error));
                             });
                     } else {
@@ -123,9 +123,9 @@ export class FirebaseAuthProvider implements AuthProviderInterface {
         return new Promise((resolve, reject)=> {
             if (this.user) {
                 let credential = token.socialProvider.credential(token.socialProvider);
-                this.firebase_auth.currentUser.linkWithCredential(credential).then((user)=> {
+                this.firebase_auth.currentUser.linkWithCredential(credential).then((user:any)=> {
                     return resolve(new FirebaseAuthToken(user));
-                }, (error) => {
+                }, (error:any) => {
                     reject(new AuthenticationException(token, error.message, error));
                 });
             } else {
@@ -149,7 +149,7 @@ export class FirebaseAuthProvider implements AuthProviderInterface {
 
 
     restore():Promise<UserTokenInterface|null> {
-        return new Promise((resolve, reject)=> {
+        return new Promise<UserTokenInterface|null>((resolve, reject)=> {
             if (this.user) {
                 return resolve(new FirebaseAuthToken(this.user));
             }
@@ -171,7 +171,7 @@ export class FirebaseAuthProvider implements AuthProviderInterface {
                 .then(function () {
                     delete this.user;
                     resolve(new AnonymousUserToken());
-                }).catch(function (error) {
+                }).catch(function (error:any) {
                 reject(token);
             });
         });

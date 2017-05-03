@@ -17,8 +17,7 @@ import {FieldErrorsComponent} from "./field-errors.component";
   </div>
 </div>
 
-`,
-  styleUrls: []
+`
 })
 export class FieldComponent implements OnInit {
   @Input() label?:string;
@@ -41,7 +40,7 @@ export class FieldComponent implements OnInit {
    * return list of the errors for current field. Initialised once per component creation (for now)
    * @return {any}
    */
-  get errorMessages() {
+  get errorMessages():any {
     if (this._errorMessages) {
       return this._errorMessages;
     }

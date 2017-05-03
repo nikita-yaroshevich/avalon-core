@@ -2149,8 +2149,7 @@ var FieldComponent = (function () {
 FieldComponent.decorators = [
     { type: _angular_core.Component, args: [{
                 selector: 'field',
-                template: "\n\n<div class=\"field-group\" [ngClass]=\"{'has-error': control && !control.valid && control.touched}\">\n  <label *ngIf=\"label\" class=\"control-label\" [for]=\"name\">{{label}}</label>\n  <div class=\"control-container\">\n    <div class=\"widget\">\n      <ng-content></ng-content>\n    </div>\n    <field-errors #fieldErrors [messages]=\"errorMessages\" [maxErrorsCount]=\"maxErrorsCount\" [control]=\"control\"></field-errors>\n  </div>\n</div>\n\n",
-                styleUrls: []
+                template: "\n\n<div class=\"field-group\" [ngClass]=\"{'has-error': control && !control.valid && control.touched}\">\n  <label *ngIf=\"label\" class=\"control-label\" [for]=\"name\">{{label}}</label>\n  <div class=\"control-container\">\n    <div class=\"widget\">\n      <ng-content></ng-content>\n    </div>\n    <field-errors #fieldErrors [messages]=\"errorMessages\" [maxErrorsCount]=\"maxErrorsCount\" [control]=\"control\"></field-errors>\n  </div>\n</div>\n\n"
             },] },
 ];
 /** @nocollapse */
@@ -2202,6 +2201,7 @@ var FieldErrorsComponent = (function () {
                 }
                 return messages;
             }
+            return [];
         },
         enumerable: true,
         configurable: true

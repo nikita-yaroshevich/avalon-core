@@ -42,7 +42,7 @@ export class FieldErrorsComponent implements AfterViewInit {
     }
   }
 
-  get errors():any {
+  get errors():string[] {
     if (this.maxErrorsCount && this.maxErrorsCount === 0) {
       return [];
     }
@@ -58,6 +58,7 @@ export class FieldErrorsComponent implements AfterViewInit {
       }
       return messages;
     }
+    return [];
   }
 
   getMessageFor(errorName:string): string {

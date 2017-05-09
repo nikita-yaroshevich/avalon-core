@@ -4,7 +4,7 @@ import * as _ from "lodash";
 import {URLSearchParams} from "@angular/http";
 
 export class CriterionToUrlTransformer extends ItemTransformerAbstract {
-  transform(criterion:Criterion, options?:any):{url:string, search:string|URLSearchParams} {
+  transform(criterion:Criterion, options?:any):{url:string, params:string|URLSearchParams} {
     let compiled = _.template(criterion.options.url || '', {interpolate: /{{([\s\S]+?)}}/g});
     let url = compiled(Object.assign(Object.create(criterion.entity), criterion.entity, criterion.criteria));
 
@@ -13,10 +13,10 @@ export class CriterionToUrlTransformer extends ItemTransformerAbstract {
       search.append(key, criterion.criteria[key]);
     });
 
-    if (criterion.options.search){
-      let existedSearch:string = criterion.options.search instanceof URLSearchParams ?
-          (<URLSearchParams>criterion.options.search).rawParams
-          :  <string>criterion.options.search;
+    if (criterion.options.params){
+      let existedSearch:string = criterion.options.params instanceof URLSearchParams ?
+          (<URLSearchParams>criterion.options.params).rawParams
+          :  <string>criterion.options.params;
       let compiled = _.template(existedSearch || '', {interpolate: /{{([\s\S]+?)}}/g});
       existedSearch = compiled(Object.assign(Object.create(criterion.entity), criterion.entity, criterion.criteria));
       search.setAll(new URLSearchParams(existedSearch));
@@ -24,7 +24,7 @@ export class CriterionToUrlTransformer extends ItemTransformerAbstract {
 
     return {
       url: url,
-      search: search
+      params: search
     };
   }
 

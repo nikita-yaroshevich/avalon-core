@@ -290,10 +290,10 @@ var EMRequestOptions = (function () {
     return EMRequestOptions;
 }());
 var Criterion = (function () {
-    function Criterion(options, criteria, entity) {
-        this.options = options;
+    function Criterion(criteria, entity, options) {
         this.entity = entity || {};
         this.criteria = criteria || {};
+        this.options = options || {};
     }
     return Criterion;
 }());
@@ -847,17 +847,17 @@ var CriterionToUrlTransformer = (function (_super) {
         Object.keys(criterion.criteria).forEach(function (key) {
             search.append(key, criterion.criteria[key]);
         });
-        if (criterion.options.search) {
-            var existedSearch = criterion.options.search instanceof _angular_http.URLSearchParams ?
-                criterion.options.search.rawParams
-                : criterion.options.search;
+        if (criterion.options.params) {
+            var existedSearch = criterion.options.params instanceof _angular_http.URLSearchParams ?
+                criterion.options.params.rawParams
+                : criterion.options.params;
             var compiled_1 = _.template(existedSearch || '', { interpolate: /{{([\s\S]+?)}}/g });
             existedSearch = compiled_1(Object.assign(Object.create(criterion.entity), criterion.entity, criterion.criteria));
             search.setAll(new _angular_http.URLSearchParams(existedSearch));
         }
         return {
             url: url,
-            search: search
+            params: search
         };
     };
     return CriterionToUrlTransformer;
@@ -949,7 +949,7 @@ var HttpRepository = (function (_super) {
     HttpRepository.prototype.fetchByCriteria = function (criteria, options) {
         options = options || this.getRequestOptionsFor('search');
         var urlParams = this.urlTransformer.transform(new Criterion(options, criteria));
-        options.search = urlParams.search;
+        options.params = urlParams.params;
         if (options.responseTransformer) {
             options.responseTransformer = new CollectionTransformer(options.responseTransformer);
         }

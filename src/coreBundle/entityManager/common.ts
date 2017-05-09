@@ -19,8 +19,8 @@ export interface EntityManagerOptions {
 export interface EMRequestOptionsArgs {
   requestTransformer?:TransformableInterface;
   responseTransformer?:TransformableInterface;
-  attempt?:number;
-  [x:string]:any
+  attempt?:number; //????
+  [x:string]:any;
 }
 
 export class EMRequestOptions implements EMRequestOptionsArgs {
@@ -67,10 +67,12 @@ export interface EntityMetadataInterface {
 export class Criterion {
   public criteria:any;
   public entity:any;
+  public options:{url:string; params?:string}|any;
 
-  constructor(public options:EMRequestOptionsArgs, criteria?:any, entity?:any) {
+  constructor(criteria?:any, entity?:any, options?:{url:string; params?:string}|any) {
     this.entity = entity || {};
     this.criteria = criteria || {};
+    this.options = options || {};
   }
 }
 

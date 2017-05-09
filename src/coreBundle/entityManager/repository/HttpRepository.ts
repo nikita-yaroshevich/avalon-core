@@ -67,7 +67,7 @@ export class HttpRepository<EntityType> extends BaseRepository<EntityType> {
             options,
             criteria
         ));
-        options.search = urlParams.search;
+        options.params = urlParams.params;
         if (options.responseTransformer) {
             options.responseTransformer = new CollectionTransformer(options.responseTransformer);
         }

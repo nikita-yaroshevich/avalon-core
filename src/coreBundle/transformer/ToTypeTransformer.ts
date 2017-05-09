@@ -6,7 +6,7 @@ import {TransformableInterface} from "./common";
  */
 export class ToTypeTransformer<T> implements TransformableInterface {
   // private Type: T;
-  constructor(private TCreator:{ new ():T; }) {
+  constructor(protected TCreator:{ new ():T; }) {
   }
 
   transform(data:any, options?:any):T {
